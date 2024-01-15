@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	adapters "github.com/WildEgor/g-cdn/internal/adapters/storage"
 	"github.com/gofiber/fiber/v2"
 	"os"
 
@@ -16,6 +17,7 @@ import (
 
 var AppSet = wire.NewSet(
 	NewApp,
+	adapters.AdaptersSet,
 	config.ConfigsSet,
 	router.RouterSet,
 )

@@ -7,8 +7,9 @@
 package pkg
 
 import (
+	"github.com/WildEgor/g-cdn/internal/adapters/storage"
 	"github.com/WildEgor/g-cdn/internal/config"
-	"github.com/WildEgor/g-cdn/internal/handlers"
+	"github.com/WildEgor/g-cdn/internal/handlers/health-check"
 	"github.com/WildEgor/g-cdn/internal/router"
 	"github.com/google/wire"
 )
@@ -18,7 +19,11 @@ import (
 func NewServer() (*Server, error) {
 	configurator := config.NewConfigurator()
 	appConfig := config.NewAppConfig(configurator)
-	healthCheckHandler := handlers.NewHealthCheckHandler(appConfig)
+	minioConfig := config.NewMinioConfig(configurator)
+	storageConfig := adapters.NewStorageConfig(minioConfig)
+	storageProvider := adapters.NewStorage(storageConfig)
+	storageAdapter := adapters.NewStorageAdapter(storageProvider)
+	healthCheckHandler := health_check_handler.NewHealthCheckHandler(storageAdapter, appConfig)
 	routerRouter := router.NewRouter(healthCheckHandler)
 	server := NewApp(appConfig, routerRouter)
 	return server, nil

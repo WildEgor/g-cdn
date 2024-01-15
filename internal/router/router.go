@@ -1,15 +1,15 @@
 package router
 
 import (
-	"github.com/WildEgor/g-cdn/internal/handlers"
+	hcHandler "github.com/WildEgor/g-cdn/internal/handlers/health-check"
 	"github.com/gofiber/fiber/v2"
 )
 
 type Router struct {
-	hc *handlers.HealthCheckHandler
+	hc *hcHandler.HealthCheckHandler
 }
 
-func NewRouter(hc *handlers.HealthCheckHandler) *Router {
+func NewRouter(hc *hcHandler.HealthCheckHandler) *Router {
 	return &Router{
 		hc: hc,
 	}
