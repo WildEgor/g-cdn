@@ -11,15 +11,14 @@ type MinioConfig struct {
 	Secret   string `env:"MINIO_SECRET_KEY"`
 	Bucket   string `env:"MINIO_BUCKET"`
 	Region   string `env:"MINIO_REGION"`
+	UseSSL   bool   `env:"MINIO_SECURE"`
 }
 
 func NewMinioConfig(c *Configurator) *MinioConfig {
 	cfg := MinioConfig{}
 
-	if err := c.Load(); err == nil {
-		if err := env.Parse(&cfg); err != nil {
-			log.Printf("[MinioConfig] %+v\n", err)
-		}
+	if err := env.Parse(&cfg); err != nil {
+		log.Printf("[MinioConfig] %+v\n", err)
 	}
 
 	return &cfg

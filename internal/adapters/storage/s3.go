@@ -14,6 +14,7 @@ type S3StorageConfig struct {
 	Bucket   string
 	AccessId string
 	Secret   string
+	Secure   bool
 }
 
 type S3Storage struct {
@@ -24,7 +25,7 @@ type S3Storage struct {
 func NewS3Storage(config *S3StorageConfig) *S3Storage {
 	client, err := s3.New(config.Endpoint, &s3.Options{
 		Creds:  credentials.NewStaticV4(config.AccessId, config.Secret, ""),
-		Secure: true,
+		Secure: config.Secure,
 	})
 	if err != nil {
 		return nil

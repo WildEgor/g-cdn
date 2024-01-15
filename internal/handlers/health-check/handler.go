@@ -5,6 +5,7 @@ import (
 	"github.com/WildEgor/g-cdn/internal/config"
 	domains "github.com/WildEgor/g-cdn/internal/domain"
 	"github.com/gofiber/fiber/v2"
+	log "github.com/sirupsen/logrus"
 )
 
 type HealthCheckHandler struct {
@@ -23,16 +24,17 @@ func NewHealthCheckHandler(
 }
 
 func (hch *HealthCheckHandler) Handle(c *fiber.Ctx) error {
-	var health map[string]bool = make(map[string]bool)
-	health["storage"] = true
+	var health = make(map[string]error)
 
 	err := hch.st.Ping()
 	if err != nil {
-		health["storage"] = false
+		health["storage"] = err
 	}
 
 	for _, h := range health {
-		if !h {
+		if h != nil {
+			log.Error("[HealthCheckHandler] error", h)
+
 			c.JSON(fiber.Map{
 				"isOk": false,
 				"data": &domains.StatusDomain{

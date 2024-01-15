@@ -1,11 +1,12 @@
 # Base Stage
 FROM golang:1.21-alpine as base
-COPY . /app/
-WORKDIR /app/
+ARG APP_PATH=/app
+COPY . $APP_PATH
+WORKDIR $APP_PATH
 RUN go mod download && mkdir -p dist
 
 # Development Stage
-FROM golang:1.21-alpine as dev
+FROM base as dev
 WORKDIR /app
 RUN go install -mod=mod github.com/cosmtrek/air
 CMD ["air", "-c", ".air-unix.toml"]
@@ -16,13 +17,15 @@ CMD ["air", "-c", ".air-unix.toml"]
 
 # Build Production Stage
 FROM base as builder
-WORKDIR /app/
+ARG APP_PATH=/app
+WORKDIR $APP_PATH
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o dist/app cmd/main.go
 
 # Production Stage
 FROM alpine:latest as production
 RUN apk --no-cache add ca-certificates
-WORKDIR /root/
+ARG APP_PATH=/root/
+WORKDIR $APP_PATH
 COPY --from=builder /app/dist/app .
 EXPOSE 8888
 CMD ["./app"]

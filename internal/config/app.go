@@ -16,18 +16,16 @@ type AppConfig struct {
 func NewAppConfig(c *Configurator) *AppConfig {
 	cfg := AppConfig{}
 
-	if err := c.Load(); err == nil {
-		if err := env.Parse(&cfg); err != nil {
-			log.Printf("[AppConfig] %+v\n", err)
-		}
+	if err := env.Parse(&cfg); err != nil {
+		log.Printf("[AppConfig] %+v\n", err)
+	}
 
-		if cfg.GoEnv == "" {
-			cfg.GoEnv = "local"
-		}
+	if cfg.GoEnv == "" {
+		cfg.GoEnv = "local"
+	}
 
-		if cfg.Version == "" {
-			cfg.Version = "local"
-		}
+	if cfg.Version == "" {
+		cfg.Version = "local"
 	}
 
 	return &cfg

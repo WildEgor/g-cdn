@@ -12,10 +12,8 @@ type MongoConfig struct {
 func NewMongoConfig(c *Configurator) *MongoConfig {
 	cfg := MongoConfig{}
 
-	if err := c.Load(); err == nil {
-		if err := env.Parse(&cfg); err != nil {
-			log.Printf("[MinioConfig] %+v\n", err)
-		}
+	if err := env.Parse(&cfg); err != nil {
+		log.Printf("[MinioConfig] %+v\n", err)
 	}
 
 	return &cfg
