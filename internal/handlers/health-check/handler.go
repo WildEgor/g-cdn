@@ -4,6 +4,7 @@ import (
 	adapters "github.com/WildEgor/g-cdn/internal/adapters/storage"
 	"github.com/WildEgor/g-cdn/internal/config"
 	domains "github.com/WildEgor/g-cdn/internal/domain"
+	core_dtos "github.com/WildEgor/g-core/pkg/core/dtos"
 	"github.com/gofiber/fiber/v2"
 	log "github.com/sirupsen/logrus"
 )
@@ -26,8 +27,11 @@ func NewHealthCheckHandler(
 func (hch *HealthCheckHandler) Handle(c *fiber.Ctx) error {
 	var health = make(map[string]error)
 
+	resp := core_dtos.InitResponse()
+
 	err := hch.st.Ping()
 	if err != nil {
+		resp.SetStatus(c, fiber.StatusInternalServerError)
 		health["storage"] = err
 	}
 
@@ -35,25 +39,18 @@ func (hch *HealthCheckHandler) Handle(c *fiber.Ctx) error {
 		if h != nil {
 			log.Error("[HealthCheckHandler] error", h)
 
-			c.JSON(fiber.Map{
-				"isOk": false,
-				"data": &domains.StatusDomain{
-					Status:      "fail",
-					Version:     hch.ac.Version,
-					Environment: hch.ac.GoEnv,
-				},
-			})
-			return nil
+			er, _ := health["storage"]
+			if er != nil {
+				resp.SetError(1, er.Error())
+			}
 		}
 	}
 
-	c.JSON(fiber.Map{
-		"isOk": true,
-		"data": &domains.StatusDomain{
-			Status:      "ok",
-			Version:     hch.ac.Version,
-			Environment: hch.ac.GoEnv,
-		},
+	resp.SetData(&domains.StatusDomain{
+		Status:      "ok",
+		Version:     hch.ac.Version,
+		Environment: hch.ac.GoEnv,
 	})
+	resp.JSON(c)
 	return nil
 }

@@ -28,8 +28,9 @@ type Server struct {
 }
 
 func NewApp(
-	appConfig *config.AppConfig,
-	router *router.Router,
+	ac *config.AppConfig,
+	fr *router.FilesRouter,
+	hr *router.HealthRouter,
 ) *Server {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: error_handler.ErrorHandler,
@@ -47,19 +48,20 @@ func NewApp(
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
 
-	if !appConfig.IsProduction() {
+	if !ac.IsProduction() {
 		// HINT: some extra setting
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.ErrorLevel)
 	}
 
-	router.Setup(app)
+	fr.SetupFilesRouter(app)
+	hr.SetupHealthRouter(app)
 
 	log.Info("Application is running on port...")
 
 	return &Server{
 		App:       app,
-		AppConfig: appConfig,
+		AppConfig: ac,
 	}
 }

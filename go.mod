@@ -1,6 +1,6 @@
 module github.com/WildEgor/g-cdn
 
-go 1.21
+go 1.21.3
 
 require (
 	github.com/caarlos0/env/v7 v7.1.0
@@ -11,6 +11,7 @@ require (
 )
 
 require (
+	github.com/WildEgor/g-core v1.0.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.5.0 // indirect

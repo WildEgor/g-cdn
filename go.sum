@@ -1,3 +1,5 @@
+github.com/WildEgor/g-core v1.0.0 h1:gm9IL00sGMInFjKKdwuAbtm8ceylPqN9Vmqp8n0/Q7o=
+github.com/WildEgor/g-core v1.0.0/go.mod h1:gMcWHPndJo0TcycWsu48cTmbRzL5xE6LSVbs8UfnMTo=
 github.com/andybalholm/brotli v1.0.5 h1:8uQZIdzKmjc/iuPu7O2ioW48L81FgatrcpfFmiq/cCs=
 github.com/andybalholm/brotli v1.0.5/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
 github.com/caarlos0/env/v7 v7.1.0 h1:9lzTF5amyQeWHZzuZeKlCb5FWSUxpG1js43mhbY8ozg=

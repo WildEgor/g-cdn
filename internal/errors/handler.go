@@ -9,7 +9,7 @@ import (
 var ErrorHandler = func(c *fiber.Ctx, err error) error {
 	code := fiber.StatusInternalServerError
 
-	// Retrieve the custom status code if it's a *fiber.Error
+	// Retrieve the custom status code if it's a *fiber.TextError
 	var e *fiber.Error
 	if errors.As(err, &e) {
 		code = e.Code

@@ -1,7 +1,7 @@
 package download_handler
 
 import (
-	domains "github.com/WildEgor/g-cdn/internal/domain"
+	core_dtos "github.com/WildEgor/g-core/pkg/core/dtos"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -13,15 +13,12 @@ func NewDownloadHandler() *DownloadHandler {
 }
 
 func (hch *DownloadHandler) Handle(c *fiber.Ctx) error {
+	resp := core_dtos.InitResponse()
 
 	// TODO: make some logic to check file in db and proxy read from S3 storage
 	// TODO: also add functionality to resize and filter images, if no image then just download
 
-	c.JSON(fiber.Map{
-		"isOk": true,
-		"data": &domains.StatusDomain{
-			Status: "ok",
-		},
-	})
+	resp.FormResponse()
+	resp.JSON(c)
 	return nil
 }
