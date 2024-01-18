@@ -2,6 +2,7 @@ package pkg
 
 import (
 	adapters "github.com/WildEgor/g-cdn/internal/adapters/storage"
+	"github.com/WildEgor/g-cdn/internal/db"
 	"github.com/gofiber/fiber/v2"
 	"os"
 
@@ -20,19 +21,23 @@ var AppSet = wire.NewSet(
 	adapters.AdaptersSet,
 	config.ConfigsSet,
 	router.RouterSet,
+	db.DbSet,
 )
 
 type Server struct {
 	App       *fiber.App
 	AppConfig *config.AppConfig
+	Mongo     *db.MongoDBConnection
 }
 
 func NewApp(
 	ac *config.AppConfig,
 	fr *router.FilesRouter,
 	hr *router.HealthRouter,
+	mongo *db.MongoDBConnection,
 ) *Server {
 	app := fiber.New(fiber.Config{
+		// Prefork:      true,
 		ErrorHandler: error_handler.ErrorHandler,
 	})
 
@@ -63,5 +68,6 @@ func NewApp(
 	return &Server{
 		App:       app,
 		AppConfig: ac,
+		Mongo:     mongo,
 	}
 }

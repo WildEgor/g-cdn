@@ -5,6 +5,7 @@ import (
 	"context"
 	s3 "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
+	log "github.com/sirupsen/logrus"
 	"io"
 )
 
@@ -41,8 +42,10 @@ func (s *S3Storage) Upload(ctx context.Context, objectName string, reader io.Rea
 	_, err := s.client.PutObject(ctx, s.config.Bucket, objectName, reader, -1, s3.PutObjectOptions{})
 
 	if err != nil {
+		log.Errorf(err.Error())
 		return err
 	}
+
 	return nil
 }
 

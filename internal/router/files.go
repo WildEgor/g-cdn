@@ -29,7 +29,7 @@ func (r *FilesRouter) SetupFilesRouter(app *fiber.App) error {
 	v1 := app.Group("/api/v1")
 
 	// TODO: add API-KEY check middleware
-	fc := v1.Group("/filer")
+	fc := v1.Group("/cdn")
 
 	fc.Post("/upload", r.uh.Handle)
 	fc.Get("/download", r.dh.Handle)

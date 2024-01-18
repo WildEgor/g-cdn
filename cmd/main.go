@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,23 +11,6 @@ import (
 )
 
 func main() {
-	Start()
-	Shutdown()
-}
-
-func Start() {
-	srv, _ := server.NewServer()
-	log.Printf("Server is listening on PORT: %s", srv.AppConfig.Port)
-
-	addr := ":" + srv.AppConfig.Port
-
-	if err := srv.App.Listen(addr); err != nil {
-		log.Panicf("[CRIT] Unable to start server. Reason: %v", err)
-	}
-}
-
-func Shutdown() {
-	// block main thread - wait for shutdown signal
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 
@@ -34,12 +18,28 @@ func Shutdown() {
 
 	go func() {
 		sig := <-sigs
-		log.Println()
-		log.Println(sig)
+		log.Infof("[Main] recieve signal %v", sig)
 		done <- true
 	}()
 
-	log.Println("[Main] Awaiting signal")
+	srv, _ := server.NewServer()
+
+	log.Info("[Main] Connect to Mongo")
+	srv.Mongo.Connect()
+
+	log.Printf("[Main] HTTP server is listening on port: %s", srv.AppConfig.Port)
+	if err := srv.App.Listen(fmt.Sprintf(":%v", srv.AppConfig.Port)); err != nil {
+		log.Panicf("[Main] Unable to start server. Reason: %v", err)
+	}
+
+	log.Info("[Main] Awaiting signal")
 	<-done
-	log.Println("[Main] Stopping consumer")
+
+	log.Info("[Main] Stopping")
+
+	srv.Mongo.Disconnect()
+	err := srv.App.Shutdown()
+	if err != nil {
+		log.Panicf("[Main] Unable to stop server. Reason: %v", err)
+	}
 }

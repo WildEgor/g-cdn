@@ -5,10 +5,12 @@ import (
 	download_handler "github.com/WildEgor/g-cdn/internal/handlers/download"
 	health_check_handler "github.com/WildEgor/g-cdn/internal/handlers/health-check"
 	upload_handler "github.com/WildEgor/g-cdn/internal/handlers/upload"
+	"github.com/WildEgor/g-cdn/internal/repositories"
 	"github.com/google/wire"
 )
 
 var HandlersSet = wire.NewSet(
+	repositories.RepositoriesSet,
 	health_check_handler.NewHealthCheckHandler,
 	upload_handler.NewUploadHandler,
 	download_handler.NewDownloadHandler,

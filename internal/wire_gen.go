@@ -9,10 +9,12 @@ package pkg
 import (
 	"github.com/WildEgor/g-cdn/internal/adapters/storage"
 	"github.com/WildEgor/g-cdn/internal/config"
+	"github.com/WildEgor/g-cdn/internal/db"
 	"github.com/WildEgor/g-cdn/internal/handlers/delete"
 	"github.com/WildEgor/g-cdn/internal/handlers/download"
 	"github.com/WildEgor/g-cdn/internal/handlers/health-check"
 	"github.com/WildEgor/g-cdn/internal/handlers/upload"
+	"github.com/WildEgor/g-cdn/internal/repositories"
 	"github.com/WildEgor/g-cdn/internal/router"
 	"github.com/google/wire"
 )
@@ -22,17 +24,20 @@ import (
 func NewServer() (*Server, error) {
 	configurator := config.NewConfigurator()
 	appConfig := config.NewAppConfig(configurator)
-	uploadHandler := upload_handler.NewUploadHandler()
-	downloadHandler := download_handler.NewDownloadHandler()
-	deleteHandler := delete_handler.NewDeleteHandler()
-	filesRouter := router.NewFilesRouter(uploadHandler, downloadHandler, deleteHandler)
+	mongoConfig := config.NewMongoConfig(configurator)
+	mongoDBConnection := db.NewMongoDBConnection(mongoConfig)
+	fileRepository := repositories.NewFileRepository(mongoDBConnection)
 	minioConfig := config.NewMinioConfig(configurator)
 	storageConfig := adapters.NewStorageConfig(minioConfig)
 	storageProvider := adapters.NewStorage(storageConfig)
 	storageAdapter := adapters.NewStorageAdapter(storageProvider)
+	uploadHandler := upload_handler.NewUploadHandler(fileRepository, storageAdapter)
+	downloadHandler := download_handler.NewDownloadHandler()
+	deleteHandler := delete_handler.NewDeleteHandler()
+	filesRouter := router.NewFilesRouter(uploadHandler, downloadHandler, deleteHandler)
 	healthCheckHandler := health_check_handler.NewHealthCheckHandler(storageAdapter, appConfig)
 	healthRouter := router.NewHealthRouter(healthCheckHandler)
-	server := NewApp(appConfig, filesRouter, healthRouter)
+	server := NewApp(appConfig, filesRouter, healthRouter, mongoDBConnection)
 	return server, nil
 }
 
