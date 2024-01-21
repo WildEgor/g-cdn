@@ -30,6 +30,7 @@ func NewUploadHandler(
 }
 
 func (h *UploadHandler) Handle(c *fiber.Ctx) error {
+	ctx := c.Context()
 	resp := core_dtos.InitResponse()
 	resp.FormResponse()
 	log.Debug("Try upload file...")
@@ -71,7 +72,7 @@ func (h *UploadHandler) Handle(c *fiber.Ctx) error {
 	}
 	defer fr.Close()
 
-	err = h.sa.Upload(c.Context(), filteredFilename, fr)
+	err = h.sa.Upload(ctx, filteredFilename, fr)
 	if err != nil {
 		resp.SetStatus(c, fiber.StatusInternalServerError)
 		resp.SetMessage("Storage upload error")

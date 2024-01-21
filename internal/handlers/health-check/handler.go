@@ -28,6 +28,7 @@ func (hch *HealthCheckHandler) Handle(c *fiber.Ctx) error {
 	var health = make(map[string]error)
 
 	resp := core_dtos.InitResponse()
+	resp.FormResponse()
 
 	err := hch.st.Ping()
 	if err != nil {
@@ -46,11 +47,11 @@ func (hch *HealthCheckHandler) Handle(c *fiber.Ctx) error {
 		}
 	}
 
-	resp.SetData(&domains.StatusDomain{
+	resp.SetData([]interface{}{&domains.StatusDomain{
 		Status:      "ok",
 		Version:     hch.ac.Version,
 		Environment: hch.ac.GoEnv,
-	})
+	}})
 	resp.JSON(c)
 	return nil
 }

@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"strings"
 )
 
@@ -16,6 +18,12 @@ func SanitizeFilename(filename string) (string, error) {
 	filteredStr = strings.Replace(filteredStr, `\`, "", -1)
 
 	return filteredStr, nil
+}
+
+func StreamToByte(stream io.Reader) []byte {
+	buf := new(bytes.Buffer)
+	_, _ = buf.ReadFrom(stream)
+	return buf.Bytes()
 }
 
 func countVal(str string, val string) int {

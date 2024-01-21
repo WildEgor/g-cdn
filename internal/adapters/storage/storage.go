@@ -3,6 +3,7 @@ package adapters
 import (
 	"context"
 	"github.com/WildEgor/g-cdn/internal/config"
+	domains "github.com/WildEgor/g-cdn/internal/domain"
 	"io"
 )
 
@@ -11,6 +12,7 @@ type StorageProvider interface {
 	Download(ctx context.Context, objectName string) (io.Reader, error)
 	Delete(objectName string) error
 	Exists(ctx context.Context, objectName string) (bool, error)
+	Metadata(objectName string) (*domains.FileMetadata, error)
 }
 
 type StoragePing interface {
@@ -54,12 +56,16 @@ func NewStorageAdapter(provider StorageProvider) *StorageAdapter {
 	}
 }
 
+func (s *StorageAdapter) Metadata(objectName string) (*domains.FileMetadata, error) {
+	return s.provider.Metadata(objectName)
+}
+
 func (s *StorageAdapter) Upload(ctx context.Context, objectName string, reader io.Reader) error {
 	return s.provider.Upload(ctx, objectName, reader)
 }
 
-func (s *StorageAdapter) Download(objectName string) (io.Reader, error) {
-	return s.provider.Download(context.Background(), objectName)
+func (s *StorageAdapter) Download(ctx context.Context, objectName string) (io.Reader, error) {
+	return s.provider.Download(ctx, objectName)
 }
 
 func (s *StorageAdapter) Delete(objectName string) error {

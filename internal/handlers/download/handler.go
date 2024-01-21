@@ -1,24 +1,41 @@
 package download_handler
 
 import (
-	core_dtos "github.com/WildEgor/g-core/pkg/core/dtos"
+	"context"
+	adapters "github.com/WildEgor/g-cdn/internal/adapters/storage"
+	"github.com/WildEgor/g-cdn/internal/utils"
 	"github.com/gofiber/fiber/v2"
+	"net/http"
 )
 
 type DownloadHandler struct {
+	sa *adapters.StorageAdapter
 }
 
-func NewDownloadHandler() *DownloadHandler {
-	return &DownloadHandler{}
+func NewDownloadHandler(
+	sa *adapters.StorageAdapter,
+) *DownloadHandler {
+	return &DownloadHandler{
+		sa,
+	}
 }
 
 func (hch *DownloadHandler) Handle(c *fiber.Ctx) error {
-	resp := core_dtos.InitResponse()
+	ctx := context.Background()
 
-	// TODO: make some logic to check file in db and proxy read from S3 storage
-	// TODO: also add functionality to resize and filter images, if no image then just download
+	filename := c.Params("filename")
 
-	resp.FormResponse()
-	resp.JSON(c)
-	return nil
+	file, err := hch.sa.Download(ctx, filename)
+	if err != nil {
+		return c.SendFile("./public/not_found.png") // TODO
+	}
+
+	fBytes := utils.StreamToByte(file)
+	if len(fBytes) == 0 {
+		return c.SendFile("./public/not_found.png") // TODO
+	}
+
+	c.Set("Content-Type", http.DetectContentType(fBytes))
+
+	return c.Send(fBytes)
 }

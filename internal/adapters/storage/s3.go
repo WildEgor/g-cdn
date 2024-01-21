@@ -3,6 +3,7 @@ package adapters
 import (
 	"bytes"
 	"context"
+	domains "github.com/WildEgor/g-cdn/internal/domain"
 	s3 "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	log "github.com/sirupsen/logrus"
@@ -36,6 +37,18 @@ func NewS3Storage(config *S3StorageConfig) *S3Storage {
 		client: client,
 		config: config,
 	}
+}
+
+func (s *S3Storage) Metadata(objectName string) (*domains.FileMetadata, error) {
+	data, err := s.client.StatObject(context.Background(), s.config.Bucket, objectName, s3.StatObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return &domains.FileMetadata{
+		Name: data.Key,
+		Size: data.Size,
+	}, nil
 }
 
 func (s *S3Storage) Upload(ctx context.Context, objectName string, reader io.Reader) error {

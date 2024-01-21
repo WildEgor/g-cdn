@@ -6,7 +6,9 @@ import (
 	"github.com/WildEgor/g-cdn/internal/db"
 	"github.com/WildEgor/g-cdn/internal/models"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -23,6 +25,49 @@ func NewFileRepository(
 		db.DbName(),
 		db,
 	}
+}
+
+func (r *FileRepository) PaginateFiles(opts *models.PaginationOpts) (*models.PaginatedResult, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	files := make([]models.FileModel, 0)
+	result := &models.PaginatedResult{}
+
+	l := int64(opts.Limit)
+	skip := int64(opts.Page*opts.Limit - opts.Limit)
+	fOpt := options.FindOptions{Limit: &l, Skip: &skip}
+	filter := bson.D{{
+		Key: "status", Value: models.ActiveStatus,
+	}}
+
+	curr, err := r.db.Instance().Database(r.name).Collection(models.CollectionFiles).Find(ctx, filter, &fOpt)
+	if err != nil {
+		log.Errorf(`[PaginateFiles] err: %v`, err)
+		return result, err
+	}
+	defer curr.Close(ctx)
+
+	count, err := r.db.Instance().Database(r.name).Collection(models.CollectionFiles).CountDocuments(ctx, filter)
+	if err != nil {
+		log.Errorf(`[PaginateFiles] err: %v`, err)
+		return result, err
+	}
+
+	for curr.Next(ctx) {
+		var el models.FileModel
+		if err := curr.Decode(&el); err != nil {
+			log.Errorf(`[PaginateFiles] err: %v`, err)
+		}
+
+		files = append(files, el)
+	}
+
+	result.Total = count
+	// TODO
+	// result.Data = files.([]interface{})
+
+	return result, nil
 }
 
 func (r *FileRepository) AddFile(filename string, checksum []byte) (string, error) {
@@ -56,7 +101,8 @@ func (r *FileRepository) AddFile(filename string, checksum []byte) (string, erro
 func (r *FileRepository) DeleteFile(filename string) (string, error) {
 	var model *models.FileModel
 	filter := bson.D{{Key: "file_name", Value: filename}}
-	err := r.db.Instance().Database(r.name).Collection(models.CollectionFiles).FindOne(context.Background(), filter).Decode(model) // TODO: ctx
+
+	err := r.db.Instance().Database(r.name).Collection(models.CollectionFiles).FindOne(context.Background(), filter).Decode(&model) // TODO: ctx
 	if err != nil {
 		return "", errors.New(`Mongo error`) // TODO
 	}

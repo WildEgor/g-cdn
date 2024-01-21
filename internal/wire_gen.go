@@ -12,7 +12,9 @@ import (
 	"github.com/WildEgor/g-cdn/internal/db"
 	"github.com/WildEgor/g-cdn/internal/handlers/delete"
 	"github.com/WildEgor/g-cdn/internal/handlers/download"
+	"github.com/WildEgor/g-cdn/internal/handlers/get-files"
 	"github.com/WildEgor/g-cdn/internal/handlers/health-check"
+	"github.com/WildEgor/g-cdn/internal/handlers/metadata"
 	"github.com/WildEgor/g-cdn/internal/handlers/upload"
 	"github.com/WildEgor/g-cdn/internal/repositories"
 	"github.com/WildEgor/g-cdn/internal/router"
@@ -32,9 +34,11 @@ func NewServer() (*Server, error) {
 	storageProvider := adapters.NewStorage(storageConfig)
 	storageAdapter := adapters.NewStorageAdapter(storageProvider)
 	uploadHandler := upload_handler.NewUploadHandler(fileRepository, storageAdapter)
-	downloadHandler := download_handler.NewDownloadHandler()
-	deleteHandler := delete_handler.NewDeleteHandler()
-	filesRouter := router.NewFilesRouter(uploadHandler, downloadHandler, deleteHandler)
+	downloadHandler := download_handler.NewDownloadHandler(storageAdapter)
+	deleteHandler := delete_handler.NewDeleteHandler(fileRepository, storageAdapter)
+	getFilesHandler := get_files_handler.NewGetFilesHandler(fileRepository, appConfig)
+	metadataHandler := metadata_handler.NewMetadataHandler(storageAdapter)
+	filesRouter := router.NewFilesRouter(uploadHandler, downloadHandler, deleteHandler, getFilesHandler, metadataHandler)
 	healthCheckHandler := health_check_handler.NewHealthCheckHandler(storageAdapter, appConfig)
 	healthRouter := router.NewHealthRouter(healthCheckHandler)
 	server := NewApp(appConfig, filesRouter, healthRouter, mongoDBConnection)
